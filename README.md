@@ -1,6 +1,6 @@
 # KafkaStorm
 
-Simple client for Kafka based on **Confluent.Kafka** (https://github.com/confluentinc/confluent-kafka-dotnet)
+Simple .net client for Kafka based on **Confluent.Kafka** (https://github.com/confluentinc/confluent-kafka-dotnet)
 
 # How to install
 

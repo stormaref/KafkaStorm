@@ -1,4 +1,6 @@
 using Confluent.Kafka;
+using KafkaStorm.Interfaces;
+using KafkaStorm.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace KafkaStorm.Consumers.Registration;
@@ -6,13 +8,20 @@ namespace KafkaStorm.Consumers.Registration;
 public class ConsumerRegistrationFactory
 {
     public IServiceCollection ServiceCollection;
-    private ConsumerConfig _config;
+    public static ConsumerConfig? ConsumerConfig;
+    public static ProducerConfig? ProducerConfig;
 
     public ConsumerRegistrationFactory(IServiceCollection serviceCollection)
     {
         ServiceCollection = serviceCollection;
     }
 
-    public void SetConfig(ConsumerConfig config) =>
-        _config = config;
+    public void SetConsumerConfig(ConsumerConfig config) =>
+        ConsumerConfig = config;
+    
+    public void AddProducer(ProducerConfig config)
+    {
+        ProducerConfig = config;
+        ServiceCollection.AddScoped<IProducer, Producer>();
+    }
 }

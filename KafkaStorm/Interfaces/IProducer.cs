@@ -1,9 +1,15 @@
 using System;
 using System.Threading.Tasks;
 
-namespace KafkaStorm.Services;
+namespace KafkaStorm.Interfaces;
 
 public interface IProducer : IDisposable
 {
-    Task ProduceAsync<T>(T message);
+    /// <summary>
+    /// Produce message to kafka
+    /// </summary>
+    /// <param name="message">Message object</param>
+    /// <typeparam name="TMessage">Type of message</typeparam>
+    /// <returns></returns>
+    Task ProduceAsync<TMessage>(TMessage message);
 }

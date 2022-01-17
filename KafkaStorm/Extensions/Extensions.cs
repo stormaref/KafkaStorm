@@ -1,7 +1,7 @@
 using System;
 using System.Text.Json;
-using KafkaStorm.Consumers.Registration;
 using KafkaStorm.Interfaces;
+using KafkaStorm.Registration;
 using KafkaStorm.Services;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -12,7 +12,6 @@ public static class Extensions
     public static void AddKafkaStorm(this IServiceCollection collection, Action<ConsumerRegistrationFactory> crf)
     {
         crf.Invoke(new ConsumerRegistrationFactory(collection));
-        collection.AddTransient<IProducer, Producer>();
     }
     
     /// <summary>

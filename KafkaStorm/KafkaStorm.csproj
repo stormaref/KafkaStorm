@@ -5,14 +5,14 @@
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
         <Authors>ArefAzizian</Authors>
-        <Version>1.1.0</Version>
+        <Version>1.2.0</Version>
         <PackageId>KafKaStorm</PackageId>
     </PropertyGroup>
-    
+
     <ItemGroup>
-        <PackageReference Include="Confluent.Kafka" Version="1.8.2" />
-        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0" />
-        <PackageReference Include="System.Text.Json" Version="6.0.1" />
+        <PackageReference Include="Confluent.Kafka" Version="1.8.2"/>
+        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0"/>
+        <PackageReference Include="System.Text.Json" Version="6.0.1"/>
     </ItemGroup>
 
 </Project>

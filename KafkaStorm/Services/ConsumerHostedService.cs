@@ -3,9 +3,9 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka;
-using KafkaStorm.Consumers.Registration;
 using KafkaStorm.Extensions;
 using KafkaStorm.Interfaces;
+using KafkaStorm.Registration;
 using Microsoft.Extensions.Hosting;
 
 namespace KafkaStorm.Services;
@@ -45,7 +45,7 @@ public class ConsumerHostedService<TMessage> : IHostedService, IDisposable where
                     throw new Exception("Unhandled exception");
                 }
             }
-        });
+        }, cancellationToken);
 
         return Task.CompletedTask;
     }

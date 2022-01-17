@@ -12,7 +12,7 @@ public static class Extensions
     public static void AddKafkaStorm(this IServiceCollection collection, Action<ConsumerRegistrationFactory> crf)
     {
         crf.Invoke(new ConsumerRegistrationFactory(collection));
-        collection.AddScoped<IProducer, Producer>();
+        collection.AddTransient<IProducer, Producer>();
     }
     
     /// <summary>

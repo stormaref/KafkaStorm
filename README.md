@@ -1,43 +1,54 @@
 # KafkaStorm
 
-Simple .net client for Kafka based on **Confluent.Kafka** (https://github.com/confluentinc/confluent-kafka-dotnet)
+Simple .net client for Kafka based on **Confluent.Kafka**
 
-# How to install
+## Features
 
-Using package manager:
+- Create queue for mesages that couldn't be send
+- Concurrent consumers
+- Producing messages concurrently
+
+## Installation
+
+### Using package manager:
 ```
-Install-Package KafkaStorm -Version 1.0.0
+Install-Package KafkaStorm -Version 1.3.0
 ```
 
-# How to use
-
-**.Net6 Example**
-
-## Consuming
+# Usage/Examples
+## Setup
 
 ```csharp
 using Confluent.Kafka;
+using KafkaStorm.Extensions;
+using KafkaStorm.Interfaces;
 
 builder.Services.AddKafkaStorm(factory =>  
 {  
- factory.SetConsumerConfig(new ConsumerConfig()  
-  {  
-	  BootstrapServers = "localhost:29092",  
-	  GroupId = "TestGroup"  
-  });  
+    factory.AddProducer(new ProducerConfig
+    {
+        BootstrapServers = "localhost:29092"
+    });
+
+    /// Use this for not queuing message:
+    /// factory.InMemoryQueue(false);
+
+    /// Use this line for starting producer queue
+    factory.StartProducerHostedService();
+
+    factory.SetConsumerConfig(new ConsumerConfig
+    {
+        BootstrapServers = "localhost:29092",
+        GroupId = "TestGroup"
+    }); 
   
- factory.AddProducer(new ProducerConfig()  
-  {  
-	  BootstrapServers = "localhost:29092",  
-  });  
-  
- factory.AddConsumer<HelloConsumer, HelloEvent>();  
+    factory.AddConsumer<HelloConsumer, HelloEvent>();  
 });
 ```
 
 > It's the same ConsumerConfig as Confluent.Kafka
 
-Your consumer should look like this:
+## Consuming
 ```csharp
 using KafkaStorm.Interfaces;  
 using Microsoft.Extensions.Logging;
@@ -56,6 +67,7 @@ public class HelloConsumer : IConsumer<HelloEvent>
  }}
 ```
 
+## Event
 Your event (message) can be any class like this:
 ```csharp
 public class HelloEvent  
@@ -88,7 +100,23 @@ public TestService(IProducer producer)
 }
 ```
 
-And send message like this:
+- ### Produce with queue
 ```csharp
-await _producer.ProduceAsync(new HelloEvent(DateTime.Now));
+_producer.Produce(new HelloEvent(DateTime.Now));
 ```
+
+- ### Produce right now
+```csharp
+await _producer.ProduceNowAsync(new HelloEvent(DateTime.Now), topicName);
+```
+
+
+# Author
+
+[@stormaref](https://www.github.com/stormaref)
+
+# Related
+
+## Here are some related projects
+
+[Confluent's .NET Client](https://github.com/confluentinc/confluent-kafka-dotnet)

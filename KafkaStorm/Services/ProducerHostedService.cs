@@ -2,18 +2,19 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using KafkaStorm.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace KafkaStorm.Services;
 
 public class ProducerHostedService : IHostedService
 {
-    private readonly IProducer _producer;
+    private readonly IServiceProvider _provider;
     private readonly IMessageStore _messageStore;
 
-    public ProducerHostedService(IProducer producer, IMessageStore messageStore)
+    public ProducerHostedService(IServiceProvider provider, IMessageStore messageStore)
     {
-        _producer = producer;
+        _provider = provider;
         _messageStore = messageStore;
     }
 
@@ -40,7 +41,11 @@ public class ProducerHostedService : IHostedService
     {
         try
         {
-            await _producer.ProduceNow(message);
+            using (var scope = _provider.CreateScope())
+            {
+                var _producer = scope.ServiceProvider.GetRequiredService<IProducer>();
+                await _producer.ProduceNow(message);
+            }
             _messageStore.RemoveMessage(id);
         }
         catch (Exception)
@@ -51,7 +56,6 @@ public class ProducerHostedService : IHostedService
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
-        _producer.Dispose();
         return Task.CompletedTask;
     }
 }

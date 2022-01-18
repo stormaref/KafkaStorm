@@ -11,7 +11,7 @@ public interface IProducer : IDisposable
     /// <param name="message">Message object</param>
     /// <typeparam name="TMessage">Type of message</typeparam>
     /// <returns></returns>
-    Task ProduceAsync<TMessage>(TMessage message);
+    Task Produce<TMessage>(TMessage message);
 
     Task ProduceNow<TMessage>(TMessage message);
 }

@@ -19,15 +19,19 @@ public class Producer : IProducer
                                                       throw new Exception("Producer Config is null")).Build();
     }
 
-    public async Task ProduceAsync<TMessage>(TMessage message)
+    public Task Produce<TMessage>(TMessage message)
     {
         if (ConsumerRegistrationFactory.UseInMemoryQueue)
         {
             _messageStore.AddMessage(message);
-            return;
+            return Task.CompletedTask;
         }
 
-        await ProduceNow(message);
+        Task.Run(async () =>
+        {
+            await ProduceNow(message);
+        });
+        return Task.CompletedTask;
     }
 
     public async Task ProduceNow<TMessage>(TMessage message)

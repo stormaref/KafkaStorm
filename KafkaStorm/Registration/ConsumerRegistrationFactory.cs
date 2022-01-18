@@ -23,7 +23,7 @@ public class ConsumerRegistrationFactory
     public void AddProducer(ProducerConfig config)
     {
         ProducerConfig = config;
-        ServiceCollection.AddTransient<IProducer, Producer>();
+        ServiceCollection.AddScoped<IProducer, Producer>();
     }
 
     public void StartProducerHostedService()

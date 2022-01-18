@@ -21,22 +21,30 @@ public class Producer : IProducer
 
     public Task Produce<TMessage>(TMessage message)
     {
-        if (ConsumerRegistrationFactory.UseInMemoryQueue)
-        {
-            _messageStore.AddMessage(message);
-            return Task.CompletedTask;
-        }
-
         Task.Run(async () =>
         {
-            await ProduceNow(message);
+            try
+            {
+                await ProduceNowAsync(message);
+            }
+            catch (Exception)
+            {
+                if (!ConsumerRegistrationFactory.UseInMemoryQueue)
+                {
+                    throw;
+                }
+
+                _messageStore.AddMessage(message);
+            }
         });
+
         return Task.CompletedTask;
     }
 
-    public async Task ProduceNow<TMessage>(TMessage message)
+    public async Task ProduceNowAsync<TMessage>(TMessage message, string? topicName = null)
     {
-        var dr = await _producer.ProduceAsync(typeof(TMessage).Name, new Message<Null, string>
+        string topic = topicName ?? typeof(TMessage).Name;
+        var dr = await _producer.ProduceAsync(topic, new Message<Null, string>
         {
             Value = message.ToJsonString()
         });

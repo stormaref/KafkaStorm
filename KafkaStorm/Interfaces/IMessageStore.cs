@@ -1,4 +1,5 @@
 using System;
+using KafkaStorm.Models;
 
 namespace KafkaStorm.Interfaces;
 
@@ -8,7 +9,7 @@ public interface IMessageStore
     /// Get last message that stored in memory
     /// </summary>
     /// <returns>Message object and id for corresponding method</returns>
-    (Guid Id, object Message) GetLastMessage();
+    (Guid Id, Message Message) GetLastMessage();
 
     /// <summary>
     /// Remove message from store
@@ -18,9 +19,10 @@ public interface IMessageStore
     bool RemoveMessage(Guid id);
 
     /// <summary>
-    /// Add message to message store
+    /// Store message
     /// </summary>
     /// <param name="message">Message object</param>
-    /// <returns>Id of stored message</returns>
-    Guid AddMessage(object message);
+    /// <typeparam name="TMessage">Message type</typeparam>
+    /// <returns>Id corresponding to stored event</returns>
+    Guid AddMessage<TMessage>(TMessage message);
 }

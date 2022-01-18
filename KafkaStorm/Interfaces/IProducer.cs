@@ -13,5 +13,12 @@ public interface IProducer : IDisposable
     /// <returns></returns>
     Task Produce<TMessage>(TMessage message);
 
-    Task ProduceNow<TMessage>(TMessage message);
+    /// <summary>
+    /// Produce a message in kafka without queuing (may produce exception)
+    /// </summary>
+    /// <param name="message">Message object</param>
+    /// <param name="topicName">Topic that you want to send the message in</param>
+    /// <typeparam name="TMessage">Message type</typeparam>
+    /// <returns></returns>
+    Task ProduceNowAsync<TMessage>(TMessage message, string? topicName = null);
 }

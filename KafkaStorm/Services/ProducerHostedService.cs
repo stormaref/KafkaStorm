@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using KafkaStorm.Interfaces;
+using KafkaStorm.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -20,7 +21,7 @@ public class ProducerHostedService : IHostedService
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        Task.Run(() =>
+        Task.Run(async () =>
         {
             while (!cancellationToken.IsCancellationRequested)
             {
@@ -30,22 +31,23 @@ public class ProducerHostedService : IHostedService
                     continue;
                 }
 
-                Task.Run(async () => { await ProduceMessage(id, message); }, cancellationToken);
+                await ProduceMessage(id, message);
             }
         }, cancellationToken);
 
         return Task.CompletedTask;
     }
 
-    private async Task ProduceMessage(Guid id, object message)
+    private async Task ProduceMessage(Guid id, Message message)
     {
         try
         {
             using (var scope = _provider.CreateScope())
             {
                 var _producer = scope.ServiceProvider.GetRequiredService<IProducer>();
-                await _producer.ProduceNow(message);
+                await _producer.ProduceNowAsync(message.MessageObject, message.Type);
             }
+
             _messageStore.RemoveMessage(id);
         }
         catch (Exception)

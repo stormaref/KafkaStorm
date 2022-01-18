@@ -28,6 +28,7 @@ public class ConsumerRegistrationFactory
 
     public void StartProducerHostedService()
     {
+        ServiceCollection.AddSingleton<IMessageStore>();
         ServiceCollection.AddHostedService<ProducerHostedService>();
     }
 

@@ -5,7 +5,7 @@
 		<Nullable>enable</Nullable>
 		<LangVersion>latest</LangVersion>
 		<Authors>ArefAzizian</Authors>
-		<Version>1.2.1</Version>
+		<Version>1.2.2</Version>
 		<PackageId>KafKaStorm</PackageId>
 	</PropertyGroup>
 

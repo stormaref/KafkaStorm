@@ -117,6 +117,6 @@ await _producer.ProduceNowAsync(new HelloEvent(DateTime.Now), topicName);
 
 # Related
 
-## Here are some related projects
+Here are some related projects
 
 [Confluent's .NET Client](https://github.com/confluentinc/confluent-kafka-dotnet)

@@ -1,9 +1,6 @@
 using System;
 using System.Text.Json;
-using Confluent.Kafka;
-using KafkaStorm.Interfaces;
 using KafkaStorm.Registration;
-using KafkaStorm.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace KafkaStorm.Extensions;

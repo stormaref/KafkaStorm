@@ -9,30 +9,35 @@ namespace KafkaStorm.Registration;
 
 public class ConsumerRegistrationFactory
 {
-    private readonly IServiceCollection _serviceCollection;
     internal static Dictionary<string, ConsumerConfig> ConsumerConfigs;
+    internal static Dictionary<string, string> ConsumerTopics;
+    private readonly IServiceCollection _serviceCollection;
 
     public ConsumerRegistrationFactory(IServiceCollection serviceCollection)
     {
         _serviceCollection = serviceCollection;
         ConsumerConfigs = new Dictionary<string, ConsumerConfig>();
+        ConsumerTopics = new Dictionary<string, string>();
     }
-    
+
     /// <summary>
-    /// Add consumer to kafka
+    ///     Add consumer to kafka
     /// </summary>
     /// <param name="config"></param>
     /// <typeparam name="TConsumer">Type of your message consumer</typeparam>
     /// <typeparam name="TMessage">Type of your message (should be consumed by the passed consumer)</typeparam>
-    public void AddConsumer<TConsumer, TMessage>(ConsumerConfig config)
+    public void AddConsumer<TConsumer, TMessage>(ConsumerConfig config, string? topicName = null)
         where TMessage : class
         where TConsumer : class, IConsumer<TMessage>
     {
-        var succeeded = ConsumerConfigs.TryAdd(typeof(TConsumer).FullName, config);
-        if (!succeeded)
-        {
-            throw new DuplicateConsumerException();
-        }
+        var topic = string.IsNullOrWhiteSpace(topicName) ? typeof(TMessage).Name : topicName;
+
+        var fullName = typeof(TConsumer).FullName;
+        var succeeded = ConsumerConfigs.TryAdd(fullName, config) &&
+                        ConsumerTopics.TryAdd(fullName, topic);
+
+        if (!succeeded) throw new DuplicateConsumerException();
+
 
         _serviceCollection.AddTransient<IConsumer<TMessage>, TConsumer>();
         _serviceCollection.AddHostedService<ConsumerHostedService<TMessage>>();

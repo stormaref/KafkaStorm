@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using Confluent.Kafka;
-using KafkaStorm.Exceptions;
 using KafkaStorm.Interfaces;
 using KafkaStorm.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,7 +24,7 @@ public class KafkaStormRegistrationFactory
     {
         prf.Invoke(new ProducerRegistrationFactory(_serviceCollection));
     }
-    
+
     public void AddConsumers(Action<ConsumerRegistrationFactory> crf)
     {
         crf.Invoke(new ConsumerRegistrationFactory(_serviceCollection));

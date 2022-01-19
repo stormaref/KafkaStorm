@@ -2,17 +2,18 @@ namespace KafkaStorm.Models;
 
 public class Message
 {
-    private Message(object messageObject, string type)
+    private Message(object topicName, string type)
     {
-        MessageObject = messageObject;
+        topicName = topicName;
         Type = type;
     }
 
-    public object MessageObject { get; }
+    public object topicName { get; }
     public string Type { get; }
 
-    public static Message Create<TMessage>(TMessage message)
+    public static Message Create<TMessage>(TMessage message, string? topicName = null)
     {
-        return new Message(message, typeof(TMessage).Name);
+        var topic = string.IsNullOrWhiteSpace(topicName) ? typeof(TMessage).Name : topicName;
+        return new Message(message, topic);
     }
 }

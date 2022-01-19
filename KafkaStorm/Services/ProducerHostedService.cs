@@ -10,8 +10,8 @@ namespace KafkaStorm.Services;
 
 public class ProducerHostedService : IHostedService
 {
-    private readonly IServiceProvider _provider;
     private readonly IMessageStore _messageStore;
+    private readonly IServiceProvider _provider;
 
     public ProducerHostedService(IServiceProvider provider, IMessageStore messageStore)
     {
@@ -26,15 +26,17 @@ public class ProducerHostedService : IHostedService
             while (!cancellationToken.IsCancellationRequested)
             {
                 var (any, id, message) = _messageStore.GetLastMessage();
-                if (!any)
-                {
-                    continue;
-                }
+                if (!any) continue;
 
                 await ProduceMessage(id, message);
             }
         }, cancellationToken);
 
+        return Task.CompletedTask;
+    }
+
+    public Task StopAsync(CancellationToken cancellationToken)
+    {
         return Task.CompletedTask;
     }
 
@@ -45,7 +47,7 @@ public class ProducerHostedService : IHostedService
             using (var scope = _provider.CreateScope())
             {
                 var _producer = scope.ServiceProvider.GetRequiredService<IProducer>();
-                await _producer.ProduceNowAsync(message.MessageObject, message.Type);
+                await _producer.ProduceNowAsync(message.topicName, message.Type);
             }
 
             _messageStore.RemoveMessage(id);
@@ -54,10 +56,5 @@ public class ProducerHostedService : IHostedService
         {
             // ignored
         }
-    }
-
-    public Task StopAsync(CancellationToken cancellationToken)
-    {
-        return Task.CompletedTask;
     }
 }

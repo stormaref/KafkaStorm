@@ -9,8 +9,8 @@ namespace KafkaStorm.Services;
 
 public class Producer : IProducer
 {
-    private readonly IProducer<Null, string> _producer;
     private readonly IMessageStore _messageStore;
+    private readonly IProducer<Null, string> _producer;
 
     public Producer(IMessageStore messageStore)
     {
@@ -19,23 +19,23 @@ public class Producer : IProducer
                                                       throw new Exception("Producer Config is null")).Build();
     }
 
-    public Task Produce<TMessage>(TMessage message)
+    public Task Produce<TMessage>(TMessage message, string? topicName = null)
     {
         Task.Run(async () =>
         {
             if (!ProducerRegistrationFactory.UseInMemoryQueue)
             {
-                await ProduceNowAsync(message);
+                await ProduceNowAsync(message, topicName);
                 return;
             }
 
             try
             {
-                await ProduceNowAsync(message);
+                await ProduceNowAsync(message, topicName);
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                _messageStore.AddMessage(message);
+                _messageStore.AddMessage(message, topicName);
             }
         });
 
@@ -44,11 +44,12 @@ public class Producer : IProducer
 
     public async Task ProduceNowAsync<TMessage>(TMessage message, string? topicName = null)
     {
-        string topic = topicName ?? typeof(TMessage).Name;
+        var topic = topicName ?? typeof(TMessage).Name;
         var dr = await _producer.ProduceAsync(topic, new Message<Null, string>
         {
             Value = message.ToJsonString()
         });
+        _producer.Flush();
     }
 
     public void Dispose()

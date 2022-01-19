@@ -12,7 +12,7 @@ Simple .net client for Kafka based on **Confluent.Kafka**
 
 ### Using package manager:
 ```
-Install-Package KafkaStorm -Version 1.4.0
+Install-Package KafkaStorm -Version 1.5.0
 ```
 
 # Usage/Examples
@@ -22,6 +22,30 @@ Install-Package KafkaStorm -Version 1.4.0
 using Confluent.Kafka;
 using KafkaStorm.Extensions;
 using KafkaStorm.Interfaces;
+
+builder.Services.AddKafkaStorm(factory =>
+{
+    factory.AddProducer(prf =>
+    {
+        // Use this for not queuing message:
+        // prf.InMemoryQueue(false);
+
+        // Use this line if you want to limit your queue size:
+        prf.SetQueueLimit(65536);
+    });
+
+    // Use this line for starting producer queue:
+    factory.StartProducerHostedService();
+
+    factory.AddConsumers(crf =>
+    {
+        crf.AddConsumer<HelloConsumer, HelloEvent>(new ConsumerConfig
+        {
+            BootstrapServers = "localhost:29092",
+            GroupId = "TestGroup"
+        });
+    });
+});
 
 builder.Services.AddKafkaStorm(factory =>
 {

@@ -25,8 +25,8 @@ public class ProducerHostedService : IHostedService
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                var (id, message) = _messageStore.GetLastMessage();
-                if (id == Guid.Empty)
+                var (any, id, message) = _messageStore.GetLastMessage();
+                if (!any)
                 {
                     continue;
                 }

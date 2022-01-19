@@ -15,7 +15,7 @@ public class Producer : IProducer
     public Producer(IMessageStore messageStore)
     {
         _messageStore = messageStore;
-        _producer = new ProducerBuilder<Null, string>(ConsumerRegistrationFactory.ProducerConfig ??
+        _producer = new ProducerBuilder<Null, string>(KafkaStormRegistrationFactory.ProducerConfig ??
                                                       throw new Exception("Producer Config is null")).Build();
     }
 
@@ -23,17 +23,18 @@ public class Producer : IProducer
     {
         Task.Run(async () =>
         {
+            if (!KafkaStormRegistrationFactory.UseInMemoryQueue)
+            {
+                await ProduceNowAsync(message);
+                return;
+            }
+
             try
             {
                 await ProduceNowAsync(message);
             }
             catch (Exception)
             {
-                if (!ConsumerRegistrationFactory.UseInMemoryQueue)
-                {
-                    throw;
-                }
-
                 _messageStore.AddMessage(message);
             }
         });

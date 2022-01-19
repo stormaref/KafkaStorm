@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using KafkaStorm.Interfaces;
 using KafkaStorm.Models;
+using KafkaStorm.Registration;
 
 namespace KafkaStorm.Services;
 
@@ -16,15 +17,15 @@ public class MessageStore : IMessageStore
         _dictionary = new();
     }
 
-    public (Guid Id, Message Message) GetLastMessage()
+    public (bool Any, Guid Id, Message Message) GetLastMessage()
     {
         if (!_dictionary.Any())
         {
-            return (Guid.Empty, default(Message));
+            return (false, Guid.Empty, default(Message));
         }
 
         var (key, value) = _dictionary.Last();
-        return (key, value);
+        return (true, key, value);
     }
 
     public bool RemoveMessage(Guid id)
@@ -35,8 +36,21 @@ public class MessageStore : IMessageStore
 
     public Guid AddMessage<TMessage>(TMessage message)
     {
+        if (KafkaStormRegistrationFactory.LimitQueue && _dictionary.Count >= KafkaStormRegistrationFactory.MaximumQueueMessageCount)
+        {
+            RemoveFirstMessage();
+        }
+
         var id = Guid.NewGuid();
         _dictionary.TryAdd(id, Message.Create(message));
         return id;
+    }
+
+    private void RemoveFirstMessage()
+    {
+        if (!RemoveMessage(_dictionary.First().Key))
+        {
+            throw new NotImplementedException();
+        }
     }
 }

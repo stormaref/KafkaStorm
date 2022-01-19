@@ -9,7 +9,7 @@ public interface IMessageStore
     /// Get last message that stored in memory
     /// </summary>
     /// <returns>Message object and id for corresponding method</returns>
-    (Guid Id, Message Message) GetLastMessage();
+    (bool Any, Guid Id, Message Message) GetLastMessage();
 
     /// <summary>
     /// Remove message from store

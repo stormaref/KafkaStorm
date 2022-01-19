@@ -18,8 +18,10 @@ public class ConsumerHostedService<TMessage> : IHostedService, IDisposable where
     public ConsumerHostedService(IConsumer<TMessage> myConsumer)
     {
         _myConsumer = myConsumer;
-        _consumer = new ConsumerBuilder<Ignore, string>(ConsumerRegistrationFactory.ConsumerConfig ??
-                                                        throw new Exception("Consumer config is empty")).Build();
+        var succeeded = ConsumerRegistrationFactory.ConsumerConfigs.TryGetValue(_myConsumer.GetType().FullName, out var config);
+        _consumer = new ConsumerBuilder<Ignore, string>(succeeded
+            ? config
+            : throw new Exception("Consumer config is empty")).Build();
     }
 
     public Task StartAsync(CancellationToken cancellationToken)

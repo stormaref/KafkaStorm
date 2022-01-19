@@ -12,7 +12,7 @@ Simple .net client for Kafka based on **Confluent.Kafka**
 
 ### Using package manager:
 ```
-Install-Package KafkaStorm -Version 1.3.0
+Install-Package KafkaStorm -Version 1.4.0
 ```
 
 # Usage/Examples

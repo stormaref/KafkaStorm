@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
 using KafkaStorm.Interfaces;
 using KafkaStorm.Models;
@@ -36,7 +35,8 @@ public class MessageStore : IMessageStore
 
     public Guid AddMessage<TMessage>(TMessage message)
     {
-        if (KafkaStormRegistrationFactory.LimitQueue && _dictionary.Count >= KafkaStormRegistrationFactory.MaximumQueueMessageCount)
+        if (ProducerRegistrationFactory.LimitQueue &&
+            _dictionary.Count >= ProducerRegistrationFactory.MaximumQueueMessageCount)
         {
             RemoveFirstMessage();
         }

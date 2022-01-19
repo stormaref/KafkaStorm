@@ -23,8 +23,8 @@ using Confluent.Kafka;
 using KafkaStorm.Extensions;
 using KafkaStorm.Interfaces;
 
-builder.Services.AddKafkaStorm(factory =>  
-{  
+builder.Services.AddKafkaStorm(factory =>
+{
     factory.AddProducer(new ProducerConfig
     {
         BootstrapServers = "localhost:29092"
@@ -36,13 +36,14 @@ builder.Services.AddKafkaStorm(factory =>
     /// Use this line for starting producer queue
     factory.StartProducerHostedService();
 
-    factory.SetConsumerConfig(new ConsumerConfig
+    factory.AddConsumers(crf =>
     {
-        BootstrapServers = "localhost:29092",
-        GroupId = "TestGroup"
-    }); 
-  
-    factory.AddConsumer<HelloConsumer, HelloEvent>();  
+        crf.AddConsumer<HelloConsumer, HelloEvent>(new ConsumerConfig
+        {
+            BootstrapServers = "localhost:29092",
+            GroupId = "TestGroup"
+        });
+    });
 });
 ```
 
@@ -117,6 +118,6 @@ await _producer.ProduceNowAsync(new HelloEvent(DateTime.Now), topicName);
 
 # Related
 
-Here are some related projects
+## Here are some related projects
 
 [Confluent's .NET Client](https://github.com/confluentinc/confluent-kafka-dotnet)

@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaStorm", "KafkaStorm\KafkaStorm.csproj", "{51AAD4F0-4C9E-4E15-9B84-8B86B5E47CEC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KafkaStorm.Test", "KafkaStorm.Test\KafkaStorm.Test.csproj", "{FA0DC5D4-9ABE-4193-A26D-6A0F04EF06D0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{51AAD4F0-4C9E-4E15-9B84-8B86B5E47CEC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{51AAD4F0-4C9E-4E15-9B84-8B86B5E47CEC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{51AAD4F0-4C9E-4E15-9B84-8B86B5E47CEC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA0DC5D4-9ABE-4193-A26D-6A0F04EF06D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA0DC5D4-9ABE-4193-A26D-6A0F04EF06D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA0DC5D4-9ABE-4193-A26D-6A0F04EF06D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA0DC5D4-9ABE-4193-A26D-6A0F04EF06D0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

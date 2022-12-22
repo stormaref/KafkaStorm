@@ -3,7 +3,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Confluent.Kafka;
-using KafkaStorm.Extensions;
+using KafkaStorm.Exceptions;
 using KafkaStorm.Interfaces;
 using KafkaStorm.Registration;
 using Microsoft.Extensions.Hosting;
@@ -14,7 +14,7 @@ public class ConsumerHostedService<TMessage> : IHostedService, IDisposable where
 {
     private readonly IConsumer<Ignore, string> _consumer;
     private readonly IConsumer<TMessage> _myConsumer;
-    private readonly string _topicName;
+    private readonly string _topicName = null!;
 
     public ConsumerHostedService(IConsumer<TMessage> myConsumer)
     {
@@ -28,7 +28,7 @@ public class ConsumerHostedService<TMessage> : IHostedService, IDisposable where
 
         _consumer = new ConsumerBuilder<Ignore, string>(succeeded
             ? config
-            : throw new Exception("Consumer config is empty")).Build();
+            : throw new ConsumerNotConfiguredException()).Build();
     }
 
     public void Dispose()
@@ -41,30 +41,18 @@ public class ConsumerHostedService<TMessage> : IHostedService, IDisposable where
         Task.Run(() =>
         {
             _consumer.Subscribe(_topicName);
-            while (!cancellationToken.IsCancellationRequested)
-                try
-                {
-                    var result = _consumer.Consume(cancellationToken);
-                    var message = result.Message.Value.DeserializeJson<TMessage>();
-                    _myConsumer.Handle(message, cancellationToken);
-                }
-                catch (Exception e)
-                    when (e is ArgumentNullException or JsonException or NotSupportedException)
-                {
-                    throw new JsonException("Error parsing json!");
-                }
-                catch (Exception e)
-                    when (e is ConsumeException)
-                {
-                    //TODO: log
-                }
-                catch (Exception e)
-                {
-                    throw new Exception("Unhandled exception");
-                }
+            while (!cancellationToken.IsCancellationRequested) Handle(cancellationToken);
         }, cancellationToken);
 
         return Task.CompletedTask;
+    }
+
+    private void Handle(CancellationToken cancellationToken)
+    {
+        var result = _consumer.Consume(cancellationToken);
+        var message = JsonSerializer.Deserialize<TMessage>(result.Message.Value) ??
+                      throw new MessageNullException<TMessage>();
+        _myConsumer.Handle(message, cancellationToken);
     }
 
     public Task StopAsync(CancellationToken cancellationToken)

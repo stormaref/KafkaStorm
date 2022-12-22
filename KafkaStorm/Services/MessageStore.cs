@@ -9,19 +9,19 @@ namespace KafkaStorm.Services;
 
 public class MessageStore : IMessageStore
 {
-    private readonly ConcurrentDictionary<Guid, Message> _dictionary;
+    private readonly ConcurrentDictionary<Guid, StoredMessage> _dictionary;
 
     public MessageStore()
     {
-        _dictionary = new ConcurrentDictionary<Guid, Message>();
+        _dictionary = new ConcurrentDictionary<Guid, StoredMessage>();
     }
 
-    public (bool Any, Guid Id, Message Message) GetLastMessage()
+    public (Guid id, StoredMessage? message) GetLastMessage()
     {
-        if (!_dictionary.Any()) return (false, Guid.Empty, default);
+        if (!_dictionary.Any()) return (Guid.Empty, default);
 
         var (key, value) = _dictionary.Last();
-        return (true, key, value);
+        return (key, value);
     }
 
     public bool RemoveMessage(Guid id)
@@ -37,12 +37,12 @@ public class MessageStore : IMessageStore
             RemoveFirstMessage();
 
         var id = Guid.NewGuid();
-        _dictionary.TryAdd(id, Message.Create(message, topicName));
+        _dictionary.TryAdd(id, StoredMessage.Create(message, topicName));
         return id;
     }
 
     private void RemoveFirstMessage()
     {
-        if (!RemoveMessage(_dictionary.First().Key)) throw new NotImplementedException();
+        if (!RemoveMessage(_dictionary.First().Key)) throw new Exception("Max size should be more than 1");
     }
 }

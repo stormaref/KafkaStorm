@@ -25,10 +25,10 @@ public class ProducerHostedService : IHostedService
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                var (any, id, message) = _messageStore.GetLastMessage();
-                if (!any) continue;
+                var (id, message) = _messageStore.GetLastMessage();
+                if (id == Guid.Empty) continue;
 
-                await ProduceMessage(id, message);
+                await ProduceMessage(id, message ?? throw new ArgumentNullException(nameof(message)));
             }
         }, cancellationToken);
 
@@ -40,16 +40,13 @@ public class ProducerHostedService : IHostedService
         return Task.CompletedTask;
     }
 
-    private async Task ProduceMessage(Guid id, Message message)
+    private async Task ProduceMessage(Guid id, StoredMessage storedMessage)
     {
         try
         {
-            using (var scope = _provider.CreateScope())
-            {
-                var _producer = scope.ServiceProvider.GetRequiredService<IProducer>();
-                await _producer.ProduceNowAsync(message.topicName, message.Type);
-            }
-
+            using var scope = _provider.CreateScope();
+            var producer = scope.ServiceProvider.GetRequiredService<IProducer>();
+            await producer.ProduceNowAsync(storedMessage);
             _messageStore.RemoveMessage(id);
         }
         catch (Exception)

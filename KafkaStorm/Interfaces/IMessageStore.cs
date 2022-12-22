@@ -9,7 +9,7 @@ public interface IMessageStore
     ///     Get last message that stored in memory
     /// </summary>
     /// <returns>Message object and id for corresponding method</returns>
-    (bool Any, Guid Id, Message Message) GetLastMessage();
+    (Guid id, StoredMessage? message) GetLastMessage();
 
     /// <summary>
     ///     Remove message from store
@@ -22,6 +22,7 @@ public interface IMessageStore
     ///     Store message
     /// </summary>
     /// <param name="message">Message object</param>
+    /// <param name="topicName">Name of topic</param>
     /// <typeparam name="TMessage">Message type</typeparam>
     /// <returns>Id corresponding to stored event</returns>
     Guid AddMessage<TMessage>(TMessage message, string? topicName = null);

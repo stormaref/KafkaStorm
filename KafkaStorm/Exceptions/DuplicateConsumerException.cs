@@ -4,7 +4,7 @@ namespace KafkaStorm.Exceptions;
 
 public class DuplicateConsumerException : Exception
 {
-    public DuplicateConsumerException() : base("Consumer added more than once")
+    public DuplicateConsumerException(string name) : base($"Consumer added more than once ({name})")
     {
     }
 }

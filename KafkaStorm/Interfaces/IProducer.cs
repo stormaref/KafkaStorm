@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using KafkaStorm.Models;
 
 namespace KafkaStorm.Interfaces;
 
@@ -9,6 +10,7 @@ public interface IProducer : IDisposable
     ///     Produce message to kafka
     /// </summary>
     /// <param name="message">Message object</param>
+    /// <param name="topicName">Name of topic</param>
     /// <typeparam name="TMessage">Type of message</typeparam>
     /// <returns></returns>
     Task Produce<TMessage>(TMessage message, string? topicName = null);
@@ -21,4 +23,6 @@ public interface IProducer : IDisposable
     /// <typeparam name="TMessage">Message type</typeparam>
     /// <returns></returns>
     Task ProduceNowAsync<TMessage>(TMessage message, string? topicName = null);
+
+    internal Task ProduceNowAsync(StoredMessage message);
 }

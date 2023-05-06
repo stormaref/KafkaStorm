@@ -5,7 +5,7 @@
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
         <Authors>ArefAzizian</Authors>
-        <Version>1.8.0</Version>
+        <Version>1.8.1</Version>
         <PackageId>KafKaStorm</PackageId>
         <LangVersion>latest</LangVersion>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -13,12 +13,18 @@
         <PackageProjectUrl>https://github.com/stormaref/KafkaStorm</PackageProjectUrl>
         <license>https://github.com/stormaref/KafkaStorm/blob/master/LICENSE</license>
         <RepositoryUrl>https://github.com/stormaref/KafkaStorm</RepositoryUrl>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <Description>Simple .net client for Kafka based on Confluent.Kafka makes publishing and subscribing easier</Description>
     </PropertyGroup>
-
+    
     <ItemGroup>
-        <PackageReference Include="Confluent.Kafka" Version="1.9.3" />
-        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="7.0.0" />
-        <PackageReference Include="System.Text.Json" Version="7.0.1" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
+        <None Include="..\README.md" Pack="true" PackagePath="\"/>
+    </ItemGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="Confluent.Kafka" Version="1.9.3"/>
+        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="7.0.0"/>
+        <PackageReference Include="System.Text.Json" Version="7.0.1"/>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0"/>
     </ItemGroup>
 </Project>

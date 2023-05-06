@@ -4,7 +4,7 @@ Simple .net client for Kafka based on **Confluent.Kafka**
 
 ## Features
 
-- Create queue for mesages that couldn't be send
+- Create queue for messages that couldn't be send
 - Concurrent consumers
 - Producing messages concurrently
 
@@ -12,7 +12,7 @@ Simple .net client for Kafka based on **Confluent.Kafka**
 
 ### Using package manager:
 ```
-Install-Package KafkaStorm -Version 1.8.1
+Install-Package KafkaStorm -Version 1.9.0
 ```
 
 # Usage/Examples

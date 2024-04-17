@@ -5,7 +5,7 @@
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
         <Authors>ArefAzizian</Authors>
-        <Version>8.0.2</Version>
+        <Version>8.0.3</Version>
         <PackageId>KafKaStorm</PackageId>
         <LangVersion>latest</LangVersion>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>

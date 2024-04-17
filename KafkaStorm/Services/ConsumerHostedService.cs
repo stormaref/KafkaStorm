@@ -51,6 +51,9 @@ public class ConsumerHostedService<TMessage> : IHostedService, IDisposable where
     {
         if (cancellationToken.IsCancellationRequested) return;
         var result = _consumer.Consume(ConsumerRegistrationFactory.ConsumingPeriod);
+        if (result == null)
+            return;
+        
         var message = JsonSerializer.Deserialize<TMessage>(result.Message.Value) ??
                       throw new MessageNullException<TMessage>();
         _myConsumer.Handle(message, cancellationToken);

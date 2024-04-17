@@ -39,6 +39,8 @@ public abstract class TestBase
 
             factory.AddConsumers(crf =>
             {
+                crf.SetConsumingPeriod(5);
+                
                 crf.AddConsumer<HelloConsumer, HelloEvent>(
                     new ConsumerConfig {BootstrapServers = "localhost:29092", GroupId = "TestGroup"}, "my-topic");
             });

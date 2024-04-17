@@ -11,6 +11,7 @@ public class ConsumerRegistrationFactory
 {
     internal static Dictionary<string, ConsumerConfig> ConsumerConfigs = null!;
     internal static Dictionary<string, string> ConsumerTopics = null!;
+    internal static int ConsumingPeriod = 10;
     private readonly IServiceCollection _serviceCollection;
 
     public ConsumerRegistrationFactory(IServiceCollection serviceCollection)
@@ -41,5 +42,14 @@ public class ConsumerRegistrationFactory
 
         _serviceCollection.AddTransient<IConsumer<TMessage>, TConsumer>();
         _serviceCollection.AddHostedService<ConsumerHostedService<TMessage>>();
+    }
+
+    /// <summary>
+    /// Set consuming timeout (period for checking for new messages)
+    /// </summary>
+    /// <param name="period">period in milliseconds</param>
+    public void SetConsumingPeriod(int period = 10)
+    {
+        ConsumingPeriod = period;
     }
 }

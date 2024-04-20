@@ -1,4 +1,3 @@
-using System;
 using KafkaStorm.Exceptions;
 
 namespace KafkaStorm.Models;

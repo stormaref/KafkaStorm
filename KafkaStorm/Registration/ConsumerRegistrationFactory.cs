@@ -9,7 +9,7 @@ namespace KafkaStorm.Registration;
 
 public class ConsumerRegistrationFactory
 {
-    internal static Dictionary<string, ConsumerConfig> ConsumerConfigs = null!;
+    public static Dictionary<string, ConsumerConfig> ConsumerConfigs = null!;
     internal static Dictionary<string, string> ConsumerTopics = null!;
     internal static int ConsumingPeriod = 10;
     private readonly IServiceCollection _serviceCollection;
@@ -34,7 +34,7 @@ public class ConsumerRegistrationFactory
     {
         var topic = string.IsNullOrWhiteSpace(topicName) ? typeof(TMessage).Name : topicName;
 
-        var fullName = typeof(TConsumer).FullName;
+        var fullName = typeof(TConsumer).FullName!;
         var succeeded = ConsumerConfigs.TryAdd(fullName, config) &&
                         ConsumerTopics.TryAdd(fullName, topic);
 
@@ -52,4 +52,5 @@ public class ConsumerRegistrationFactory
     {
         ConsumingPeriod = period;
     }
+
 }

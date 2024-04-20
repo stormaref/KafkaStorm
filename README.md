@@ -53,6 +53,26 @@ builder.Services.AddKafkaStorm(factory =>
 
 > It's the same ConsumerConfig as Confluent.Kafka
 
+## New Feature 🎉
+Adding consumers is even easier now:
+
+```csharp
+using Confluent.Kafka;
+using KafkaStorm.Extensions;
+using KafkaStorm.Interfaces;
+
+builder.Services.AddKafkaStorm(factory =>
+{
+    factory.AddConsumers(crf =>
+    {
+        var config = new ConsumerConfig { BootstrapServers = "localhost:29092", GroupId = "TestGroup" };
+            
+        //This line can add all consumers in the assembly with their according messages automatically
+        crf.AddConsumersFromAssembly(Assembly.GetExecutingAssembly(), config);
+    });
+});
+```
+
 ## Consuming
 ```csharp
 using KafkaStorm.Interfaces;  

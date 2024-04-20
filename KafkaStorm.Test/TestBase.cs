@@ -1,6 +1,8 @@
+using System.Reflection;
 using Confluent.Kafka;
 using KafkaStorm.Extensions;
 using KafkaStorm.Interfaces;
+using KafkaStorm.Registration;
 using KafkaStorm.Test.TestConsumers;
 using KafkaStorm.Test.TestEvents;
 using Microsoft.Extensions.DependencyInjection;
@@ -40,9 +42,12 @@ public abstract class TestBase
             factory.AddConsumers(crf =>
             {
                 crf.SetConsumingPeriod(5);
+
+                var config = new ConsumerConfig { BootstrapServers = "localhost:29092", GroupId = "TestGroup" };
                 
-                crf.AddConsumer<HelloConsumer, HelloEvent>(
-                    new ConsumerConfig {BootstrapServers = "localhost:29092", GroupId = "TestGroup"}, "my-topic");
+                crf.AddConsumer<HelloConsumer, HelloEvent>(config, "my-topic");
+                
+                crf.AddConsumersFromAssembly(Assembly.GetExecutingAssembly(), config);
             });
         });
         return collection;

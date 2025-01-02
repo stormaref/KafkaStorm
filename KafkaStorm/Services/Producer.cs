@@ -66,12 +66,9 @@ public class Producer : IProducer
 
     public async Task ProduceNowAsync(StoredMessage message)
     {
-        if (message is null)
-        {
-            throw new ArgumentNullException(nameof(message));
-        }
+        ArgumentNullException.ThrowIfNull(message);
 
-        var dr = await _producer.ProduceAsync(message.Topic, new Message<Null, string>
+        await _producer.ProduceAsync(message.Topic, new Message<Null, string>
         {
             Value = JsonSerializer.Serialize(message.Body)
         });

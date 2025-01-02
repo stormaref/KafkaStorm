@@ -32,7 +32,7 @@ public static class Extensions
         var method = typeof(ConsumerRegistrationFactory).GetMethod("AddConsumer");
         var methodInfos = (from messageType in messageTypes
                 let consumerType = GetConsumerType(assembly, messageType)
-                where consumerType != default
+                where consumerType != null
                 select method!.MakeGenericMethod(consumerType, messageType))
             .ToList();
         foreach (var generic in methodInfos)

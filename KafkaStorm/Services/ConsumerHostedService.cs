@@ -21,10 +21,11 @@ public class ConsumerHostedService<TMessage> : IHostedService, IDisposable where
         _myConsumer = myConsumer;
 
         var fullName = _myConsumer.GetType().FullName;
+        ArgumentException.ThrowIfNullOrEmpty(fullName);
 
         var succeeded =
             ConsumerRegistrationFactory.ConsumerConfigs.TryGetValue(fullName, out var config) &&
-            ConsumerRegistrationFactory.ConsumerTopics.TryGetValue(fullName, out _topicName);
+            ConsumerRegistrationFactory.ConsumerTopics.TryGetValue(fullName, out _topicName!);
 
         _consumer = new ConsumerBuilder<Ignore, string>(succeeded
             ? config
@@ -53,7 +54,7 @@ public class ConsumerHostedService<TMessage> : IHostedService, IDisposable where
         var result = _consumer.Consume(ConsumerRegistrationFactory.ConsumingPeriod);
         if (result == null)
             return;
-        
+
         var message = JsonSerializer.Deserialize<TMessage>(result.Message.Value) ??
                       throw new MessageNullException<TMessage>();
         _myConsumer.Handle(message, cancellationToken);

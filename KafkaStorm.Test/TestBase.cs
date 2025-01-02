@@ -32,7 +32,7 @@ public abstract class TestBase
             {
                 prf.ConfigProducer(new ProducerConfig {BootstrapServers = "localhost:29092",});
 
-                prf.InMemoryQueue();
+                ProducerRegistrationFactory.InMemoryQueue();
 
                 prf.SetQueueLimit(65536);
             });

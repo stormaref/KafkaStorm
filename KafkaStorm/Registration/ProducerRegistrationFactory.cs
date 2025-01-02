@@ -38,7 +38,7 @@ public class ProducerRegistrationFactory
         MaximumQueueMessageCount = count;
     }
 
-    public void InMemoryQueue(bool activate = true)
+    public static void InMemoryQueue(bool activate = true)
     {
         UseInMemoryQueue = activate;
     }

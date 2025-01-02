@@ -2,9 +2,4 @@
 
 namespace KafkaStorm.Exceptions;
 
-public class ConsumerNotConfiguredException : Exception
-{
-    public ConsumerNotConfiguredException() : base("Consumer is not configured")
-    {
-    }
-}
+public class ConsumerNotConfiguredException() : Exception("Consumer is not configured");

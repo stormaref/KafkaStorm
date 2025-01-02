@@ -2,9 +2,4 @@
 
 namespace KafkaStorm.Exceptions;
 
-public class ProducerConfigNullException : Exception
-{
-    public ProducerConfigNullException() : base("Producer Config is null")
-    {
-    }
-}
+public class ProducerConfigNullException() : Exception("Producer Config is null");

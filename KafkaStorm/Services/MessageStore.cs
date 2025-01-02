@@ -18,7 +18,7 @@ public class MessageStore : IMessageStore
 
     public (Guid id, StoredMessage? message) GetLastMessage()
     {
-        if (!_dictionary.Any()) return (Guid.Empty, default);
+        if (_dictionary.IsEmpty) return (Guid.Empty, null);
 
         var (key, value) = _dictionary.Last();
         return (key, value);

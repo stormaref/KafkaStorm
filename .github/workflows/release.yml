@@ -21,11 +21,15 @@ jobs:
       run: dotnet build --configuration Release --no-restore
     - name: Test
       run: dotnet test --configuration Release --no-build
-    - name: Publish to NuGet
-      uses: GerardSmit/publish-nuget@v5.0.0
-      with:
-        PROJECT_FILE_PATH: KafkaStorm/KafkaStorm.csproj
-        VERSION_REGEX: '^\s*<Version>(.*)<\/Version>\s*$'
-        TAG_FORMAT: '*'
-        TAG_COMMIT: false
-        NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
+    - name: Pack
+      run: dotnet pack KafkaStorm/KafkaStorm.csproj --configuration Release --no-build --output ./artifacts
+    - name: Push to NuGet
+      run: |
+        dotnet nuget push ./artifacts/*.nupkg \
+          --api-key ${{ secrets.NUGET_API_KEY }} \
+          --source https://api.nuget.org/v3/index.json \
+          --skip-duplicate
+        dotnet nuget push ./artifacts/*.snupkg \
+          --api-key ${{ secrets.NUGET_API_KEY }} \
+          --source https://api.nuget.org/v3/index.json \
+          --skip-duplicate

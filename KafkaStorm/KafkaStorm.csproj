@@ -1,30 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
-        <Nullable>enable</Nullable>
-        <LangVersion>latest</LangVersion>
         <Authors>ArefAzizian</Authors>
-        <Version>9.0.0</Version>
-        <PackageId>KafKaStorm</PackageId>
-        <LangVersion>latest</LangVersion>
+        <Version>10.0.0</Version>
+        <PackageId>KafkaStorm</PackageId>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Title>KafkaStorm</Title>
         <PackageProjectUrl>https://github.com/stormaref/KafkaStorm</PackageProjectUrl>
-        <license>https://github.com/stormaref/KafkaStorm/blob/master/LICENSE</license>
+        <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <RepositoryUrl>https://github.com/stormaref/KafkaStorm</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <PackageTags>kafka;confluent;dependency-injection;hosted-service</PackageTags>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <Description>Simple .net client for Kafka based on Confluent.Kafka makes publishing and subscribing easier</Description>
     </PropertyGroup>
-    
+
     <ItemGroup>
-        <None Include="..\README.md" Pack="true" PackagePath="\"/>
+        <None Include="..\README.md" Pack="true" PackagePath="\" />
     </ItemGroup>
-    
+
     <ItemGroup>
-        <PackageReference Include="Confluent.Kafka" Version="2.6.1" />
-        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.0" />
-        <PackageReference Include="System.Text.Json" Version="9.0.0" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
+        <PackageReference Include="Confluent.Kafka" />
+        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     </ItemGroup>
 </Project>

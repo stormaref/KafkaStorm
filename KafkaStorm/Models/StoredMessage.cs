@@ -2,25 +2,17 @@ using KafkaStorm.Exceptions;
 
 namespace KafkaStorm.Models;
 
-public class StoredMessage
+public sealed class StoredMessage(string topic, object body)
 {
-    public StoredMessage(string topic, object body)
-    {
-        Topic = topic;
-        Body = body;
-    }
-
-    public string Topic { get; private set; }
-    public object Body { get; private set; }
+    public string Topic { get; } = topic;
+    public object Body { get; } = body;
 
     public static StoredMessage Create<T>(T message, string? topicName = null)
     {
-        var topic = string.IsNullOrWhiteSpace(topicName) ? typeof(T).Name : topicName;
         if (message is null)
-        {
             throw new MessageNullException<T>();
-        }
 
+        var topic = string.IsNullOrWhiteSpace(topicName) ? typeof(T).Name : topicName;
         return new StoredMessage(topic, message);
     }
 }

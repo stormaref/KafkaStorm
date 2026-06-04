@@ -1,5 +1,3 @@
-﻿using System;
-
-namespace KafkaStorm.Exceptions;
+﻿namespace KafkaStorm.Exceptions;
 
 public class ProducerConfigNullException() : Exception("Producer Config is null");

@@ -1,5 +1,5 @@
-using System.Collections.Generic;
 using Confluent.Kafka;
+using KafkaStorm.Configuration;
 using KafkaStorm.Exceptions;
 using KafkaStorm.Interfaces;
 using KafkaStorm.Services;
@@ -7,50 +7,58 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace KafkaStorm.Registration;
 
-public class ConsumerRegistrationFactory
+public class ConsumerRegistrationFactory(IServiceCollection serviceCollection)
 {
-    public static Dictionary<string, ConsumerConfig> ConsumerConfigs = null!;
-    internal static Dictionary<string, string> ConsumerTopics = null!;
-    internal static int ConsumingPeriod = 10;
-    private readonly IServiceCollection _serviceCollection;
+    private readonly IConsumerRegistrationRegistry _registry = GetOrCreateRegistry(serviceCollection);
+    private readonly ConsumerHostingOptions _hostingOptions = GetOrCreateHostingOptions(serviceCollection);
 
-    public ConsumerRegistrationFactory(IServiceCollection serviceCollection)
-    {
-        _serviceCollection = serviceCollection;
-        ConsumerConfigs = new Dictionary<string, ConsumerConfig>();
-        ConsumerTopics = new Dictionary<string, string>();
-    }
-
-    /// <summary>
-    ///     Add consumer to kafka
-    /// </summary>
-    /// <param name="config"></param>
-    /// <param name="topicName">Name of topic</param>
-    /// <typeparam name="TConsumer">Type of your message consumer</typeparam>
-    /// <typeparam name="TMessage">Type of your message (should be consumed by the passed consumer)</typeparam>
     public void AddConsumer<TConsumer, TMessage>(ConsumerConfig config, string? topicName = null)
         where TMessage : class
         where TConsumer : class, IConsumer<TMessage>
     {
         var topic = string.IsNullOrWhiteSpace(topicName) ? typeof(TMessage).Name : topicName;
-
         var fullName = typeof(TConsumer).FullName!;
-        var succeeded = ConsumerConfigs.TryAdd(fullName, config) &&
-                        ConsumerTopics.TryAdd(fullName, topic);
 
-        if (!succeeded) throw new DuplicateConsumerException(typeof(TConsumer).Name);
+        try
+        {
+            _registry.Register(fullName, new ConsumerRegistration(config, topic));
+        }
+        catch (InvalidOperationException)
+        {
+            throw new DuplicateConsumerException(typeof(TConsumer).Name);
+        }
 
-        _serviceCollection.AddTransient<IConsumer<TMessage>, TConsumer>();
-        _serviceCollection.AddHostedService<ConsumerHostedService<TMessage>>();
+        serviceCollection.AddTransient<IConsumer<TMessage>, TConsumer>();
+        serviceCollection.AddHostedService<ConsumerHostedService<TMessage>>();
     }
 
-    /// <summary>
-    /// Set consuming timeout (period for checking for new messages)
-    /// </summary>
-    /// <param name="period">period in milliseconds</param>
-    public void SetConsumingPeriod(int period = 10)
+    public void SetConsumingPeriod(int period = 10) => _hostingOptions.ConsumingPeriodMs = period;
+
+    private static IConsumerRegistrationRegistry GetOrCreateRegistry(IServiceCollection services)
     {
-        ConsumingPeriod = period;
+        foreach (var descriptor in services)
+        {
+            if (descriptor.ServiceType == typeof(IConsumerRegistrationRegistry) &&
+                descriptor.ImplementationInstance is IConsumerRegistrationRegistry existing)
+                return existing;
+        }
+
+        var registry = new ConsumerRegistrationRegistry();
+        services.AddSingleton<IConsumerRegistrationRegistry>(registry);
+        return registry;
     }
 
+    private static ConsumerHostingOptions GetOrCreateHostingOptions(IServiceCollection services)
+    {
+        foreach (var descriptor in services)
+        {
+            if (descriptor.ServiceType == typeof(ConsumerHostingOptions) &&
+                descriptor.ImplementationInstance is ConsumerHostingOptions existing)
+                return existing;
+        }
+
+        var options = new ConsumerHostingOptions();
+        services.AddSingleton(options);
+        return options;
+    }
 }

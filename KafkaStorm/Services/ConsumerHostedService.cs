@@ -1,68 +1,78 @@
-using System;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 using Confluent.Kafka;
+using KafkaStorm.Configuration;
 using KafkaStorm.Exceptions;
 using KafkaStorm.Interfaces;
-using KafkaStorm.Registration;
 using Microsoft.Extensions.Hosting;
 
 namespace KafkaStorm.Services;
 
-public class ConsumerHostedService<TMessage> : IHostedService, IDisposable where TMessage : class
+public sealed class ConsumerHostedService<TMessage>(
+    IConsumer<TMessage> consumer,
+    IConsumerRegistrationRegistry registry,
+    ConsumerHostingOptions hostingOptions) :
+    BackgroundService,
+    IAsyncDisposable
+    where TMessage : class
 {
-    private readonly IConsumer<Ignore, string> _consumer;
-    private readonly IConsumer<TMessage> _myConsumer;
-    private readonly string _topicName = null!;
+    private readonly IConsumer<Ignore, string> _kafkaConsumer = BuildKafkaConsumer(consumer, registry);
+    private readonly string _topicName = ResolveTopicName(consumer, registry);
 
-    public ConsumerHostedService(IConsumer<TMessage> myConsumer)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _myConsumer = myConsumer;
+        _kafkaConsumer.Subscribe(_topicName);
 
-        var fullName = _myConsumer.GetType().FullName;
-        ArgumentException.ThrowIfNullOrEmpty(fullName);
-
-        var succeeded =
-            ConsumerRegistrationFactory.ConsumerConfigs.TryGetValue(fullName, out var config) &&
-            ConsumerRegistrationFactory.ConsumerTopics.TryGetValue(fullName, out _topicName!);
-
-        _consumer = new ConsumerBuilder<Ignore, string>(succeeded
-            ? config
-            : throw new ConsumerNotConfiguredException()).Build();
-    }
-
-    public void Dispose()
-    {
-        _consumer.Dispose();
-    }
-
-    public Task StartAsync(CancellationToken cancellationToken)
-    {
-        Task.Run(() =>
+        while (!stoppingToken.IsCancellationRequested)
         {
-            _consumer.Subscribe(_topicName);
-            while (!cancellationToken.IsCancellationRequested) Handle(cancellationToken);
-        }, cancellationToken);
-
-        return Task.CompletedTask;
+            await HandleNextMessageAsync(stoppingToken);
+        }
     }
 
-    private void Handle(CancellationToken cancellationToken)
+    private async Task HandleNextMessageAsync(CancellationToken cancellationToken)
     {
-        if (cancellationToken.IsCancellationRequested) return;
-        var result = _consumer.Consume(ConsumerRegistrationFactory.ConsumingPeriod);
-        if (result == null)
+        var result = _kafkaConsumer.Consume(hostingOptions.ConsumingPeriodMs);
+        if (result is null)
             return;
 
         var message = JsonSerializer.Deserialize<TMessage>(result.Message.Value) ??
                       throw new MessageNullException<TMessage>();
-        _myConsumer.Handle(message, cancellationToken);
+
+        await consumer.Handle(message, cancellationToken);
     }
 
-    public Task StopAsync(CancellationToken cancellationToken)
+    public override Task StopAsync(CancellationToken cancellationToken)
     {
-        _consumer.Close();
-        return Task.CompletedTask;
+        _kafkaConsumer.Close();
+        return base.StopAsync(cancellationToken);
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        _kafkaConsumer.Dispose();
+        return ValueTask.CompletedTask;
+    }
+
+    private static IConsumer<Ignore, string> BuildKafkaConsumer(
+        IConsumer<TMessage> consumer,
+        IConsumerRegistrationRegistry registry)
+    {
+        var fullName = consumer.GetType().FullName;
+        ArgumentException.ThrowIfNullOrEmpty(fullName);
+
+        if (!registry.TryGetRegistration(fullName, out var registration))
+            throw new ConsumerNotConfiguredException();
+
+        return new ConsumerBuilder<Ignore, string>(registration.Config).Build();
+    }
+
+    private static string ResolveTopicName(IConsumer<TMessage> consumer, IConsumerRegistrationRegistry registry)
+    {
+        var fullName = consumer.GetType().FullName;
+        ArgumentException.ThrowIfNullOrEmpty(fullName);
+
+        if (!registry.TryGetRegistration(fullName, out var registration))
+            throw new ConsumerNotConfiguredException();
+
+        return registration.Topic;
     }
 }

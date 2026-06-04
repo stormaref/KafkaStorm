@@ -1,57 +1,45 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using KafkaStorm.Interfaces;
 using KafkaStorm.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace KafkaStorm.Services;
 
-public class ProducerHostedService : IHostedService
+public sealed class ProducerHostedService(
+    IServiceProvider provider,
+    IMessageStore messageStore,
+    ILogger<ProducerHostedService> logger) : BackgroundService
 {
-    private readonly IMessageStore _messageStore;
-    private readonly IServiceProvider _provider;
+    private static readonly TimeSpan EmptyQueueDelay = TimeSpan.FromMilliseconds(100);
 
-    public ProducerHostedService(IServiceProvider provider, IMessageStore messageStore)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _provider = provider;
-        _messageStore = messageStore;
-    }
-
-    public Task StartAsync(CancellationToken cancellationToken)
-    {
-        Task.Run(async () =>
+        while (!stoppingToken.IsCancellationRequested)
         {
-            while (!cancellationToken.IsCancellationRequested)
+            var (id, message) = messageStore.GetLastMessage();
+            if (id == Guid.Empty)
             {
-                var (id, message) = _messageStore.GetLastMessage();
-                if (id == Guid.Empty) continue;
-
-                await ProduceMessage(id, message ?? throw new ArgumentNullException(nameof(message)));
+                await Task.Delay(EmptyQueueDelay, stoppingToken);
+                continue;
             }
-        }, cancellationToken);
 
-        return Task.CompletedTask;
+            await ProduceMessageAsync(id, message ?? throw new ArgumentNullException(nameof(message)), stoppingToken);
+        }
     }
 
-    public Task StopAsync(CancellationToken cancellationToken)
-    {
-        return Task.CompletedTask;
-    }
-
-    private async Task ProduceMessage(Guid id, StoredMessage storedMessage)
+    private async Task ProduceMessageAsync(Guid id, StoredMessage storedMessage, CancellationToken cancellationToken)
     {
         try
         {
-            using var scope = _provider.CreateScope();
+            using var scope = provider.CreateScope();
             var producer = scope.ServiceProvider.GetRequiredService<IProducer>();
             await producer.ProduceNowAsync(storedMessage);
-            _messageStore.RemoveMessage(id);
+            messageStore.RemoveMessage(id);
         }
-        catch (Exception)
+        catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
         {
-            // ignored
+            logger.LogDebug(ex, "Failed to retry producing queued message {MessageId}", id);
         }
     }
 }

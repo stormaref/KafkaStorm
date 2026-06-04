@@ -1,0 +1,31 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x'
+    - name: Restore
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+    - name: Test
+      run: dotnet test --configuration Release --no-build
+    - name: Publish to NuGet
+      uses: GerardSmit/publish-nuget@v5.0.0
+      with:
+        PROJECT_FILE_PATH: KafkaStorm/KafkaStorm.csproj
+        VERSION_REGEX: '^\s*<Version>(.*)<\/Version>\s*$'
+        TAG_FORMAT: '*'
+        TAG_COMMIT: false
+        NUGET_KEY: ${{ secrets.NUGET_API_KEY }}

@@ -1,31 +1,24 @@
-using System;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Confluent.Kafka;
+using KafkaStorm.Configuration;
 using KafkaStorm.Exceptions;
 using KafkaStorm.Interfaces;
 using KafkaStorm.Models;
-using KafkaStorm.Registration;
 
 namespace KafkaStorm.Services;
 
-public class Producer : IProducer
+public sealed class Producer(ProducerOptions options, IMessageStore messageStore) : IProducer, IAsyncDisposable
 {
-    private readonly IMessageStore _messageStore;
-    private readonly IProducer<Null, string> _producer;
-
-    public Producer(IMessageStore messageStore)
-    {
-        _messageStore = messageStore;
-        _producer = new ProducerBuilder<Null, string>(ProducerRegistrationFactory.ProducerConfig ??
-                                                      throw new ProducerConfigNullException()).Build();
-    }
+    private readonly IMessageStore _messageStore = messageStore;
+    private readonly IProducer<Null, string> _producer = new ProducerBuilder<Null, string>(
+        options.Config ?? throw new ProducerConfigNullException()).Build();
+    private readonly ProducerOptions _options = options;
 
     public Task Produce<TMessage>(TMessage message, string? topicName = null)
     {
-        Task.Run(async () =>
+        _ = Task.Run(async () =>
         {
-            if (!ProducerRegistrationFactory.UseInMemoryQueue)
+            if (!_options.UseInMemoryQueue)
             {
                 await ProduceNowAsync(message, topicName);
                 return;
@@ -51,13 +44,10 @@ public class Producer : IProducer
 
     public async Task ProduceNowAsync<TMessage>(TMessage message, string? topicName = null)
     {
-        if (message is null)
-        {
-            throw new ArgumentNullException(typeof(TMessage).Name);
-        }
+        ArgumentNullException.ThrowIfNull(message);
 
         var topic = topicName ?? typeof(TMessage).Name;
-        var dr = await _producer.ProduceAsync(topic, new Message<Null, string>
+        await _producer.ProduceAsync(topic, new Message<Null, string>
         {
             Value = JsonSerializer.Serialize(message)
         });
@@ -79,5 +69,11 @@ public class Producer : IProducer
     {
         _producer.Flush();
         _producer.Dispose();
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        Dispose();
+        return ValueTask.CompletedTask;
     }
 }

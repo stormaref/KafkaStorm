@@ -1,5 +1,3 @@
-﻿using System;
-
-namespace KafkaStorm.Exceptions;
+﻿namespace KafkaStorm.Exceptions;
 
 public class ConsumerNotConfiguredException() : Exception("Consumer is not configured");

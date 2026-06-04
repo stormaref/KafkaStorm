@@ -1,24 +1,19 @@
-using System;
 using System.Collections.Concurrent;
-using System.Linq;
+using KafkaStorm.Configuration;
 using KafkaStorm.Interfaces;
 using KafkaStorm.Models;
-using KafkaStorm.Registration;
 
 namespace KafkaStorm.Services;
 
-public class MessageStore : IMessageStore
+public sealed class MessageStore(ProducerOptions options) : IMessageStore
 {
-    private readonly ConcurrentDictionary<Guid, StoredMessage> _dictionary;
-
-    public MessageStore()
-    {
-        _dictionary = new ConcurrentDictionary<Guid, StoredMessage>();
-    }
+    private readonly ConcurrentDictionary<Guid, StoredMessage> _dictionary = new();
+    private readonly ProducerOptions _options = options;
 
     public (Guid id, StoredMessage? message) GetLastMessage()
     {
-        if (_dictionary.IsEmpty) return (Guid.Empty, null);
+        if (_dictionary.IsEmpty)
+            return (Guid.Empty, null);
 
         var (key, value) = _dictionary.Last();
         return (key, value);
@@ -26,14 +21,12 @@ public class MessageStore : IMessageStore
 
     public bool RemoveMessage(Guid id)
     {
-        _dictionary.TryRemove(id, out var message);
-        return message != null;
+        return _dictionary.TryRemove(id, out _);
     }
 
     public Guid AddMessage<TMessage>(TMessage message, string? topicName = null)
     {
-        if (ProducerRegistrationFactory.LimitQueue &&
-            _dictionary.Count >= ProducerRegistrationFactory.MaximumQueueMessageCount)
+        if (_options.LimitQueue && _dictionary.Count >= _options.MaximumQueueMessageCount)
             RemoveFirstMessage();
 
         var id = Guid.NewGuid();
@@ -43,6 +36,7 @@ public class MessageStore : IMessageStore
 
     private void RemoveFirstMessage()
     {
-        if (!RemoveMessage(_dictionary.First().Key)) throw new Exception("Max size should be more than 1");
+        if (!RemoveMessage(_dictionary.First().Key))
+            throw new InvalidOperationException("Max size should be more than 1");
     }
 }

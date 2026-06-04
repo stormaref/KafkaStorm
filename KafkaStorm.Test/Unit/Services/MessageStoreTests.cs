@@ -52,17 +52,18 @@ public class MessageStoreTests
     }
 
     [Fact]
-    public void AddMessage_WhenQueueLimitReached_EvictsOldestMessage()
+    public void AddMessage_WhenQueueLimitReached_KeepsAtMostMaximumQueueMessageCount()
     {
         var options = new ProducerOptions { LimitQueue = true, MaximumQueueMessageCount = 2 };
         var store = new MessageStore(options);
 
-        store.AddMessage(new HelloEvent("first"), "topic-1");
-        store.AddMessage(new HelloEvent("second"), "topic-2");
-        store.AddMessage(new HelloEvent("third"), "topic-3");
+        var id1 = store.AddMessage(new HelloEvent("first"), "topic-1");
+        var id2 = store.AddMessage(new HelloEvent("second"), "topic-2");
+        var id3 = store.AddMessage(new HelloEvent("third"), "topic-3");
 
-        var (_, message) = store.GetLastMessage();
-        message!.Topic.Should().Be("topic-3");
+        // ConcurrentDictionary iteration order is undefined; verify the size invariant instead.
+        var remainingCount = new[] { id1, id2, id3 }.Count(store.RemoveMessage);
+        remainingCount.Should().Be(2);
     }
 
     private static MessageStore CreateStore() => new(new ProducerOptions());

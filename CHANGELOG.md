@@ -15,6 +15,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated Microsoft.NET.Test.Sdk to 18.10.1
 - Updated xunit.runner.visualstudio to 4.0.0
 
+### Fixed
+
+- `MessageStore` retry queue now has deterministic FIFO ordering. It was backed by a
+  `ConcurrentDictionary` read via LINQ `.First()`/`.Last()`, whose enumeration order is undefined,
+  so the message picked for retry and the message evicted at the queue limit were both arbitrary.
+  Retries now preserve produce order and eviction always drops the oldest message.
+- `MessageStore` operations are now O(1) instead of O(n); the producer polls the queue head in a
+  loop, so the previous LINQ scans grew with queue depth.
+- `ProducerHostedService` no longer spins without delay on a message that keeps failing to produce
+
 ### Added
 
 - NuGet vulnerability auditing across direct and transitive packages (`NuGetAuditMode=all`)
